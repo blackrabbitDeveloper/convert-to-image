@@ -26,3 +26,38 @@ export function renameTo(filename, format) {
   const base = dot === -1 ? filename : filename.slice(0, dot);
   return base + '.' + ext;
 }
+
+/**
+ * File을 디코딩해 흰 배경 위에 그린 뒤 대상 포맷/품질로 재인코딩한다.
+ * JPEG/WebP는 알파를 지원하지 않으므로 흰 배경 합성으로 투명 영역이 검게 나오는 것을 막는다.
+ * @returns {Promise<Blob>}
+ */
+export function convert(file, { format, quality }) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('인코딩 실패 — 브라우저가 ' + format + ' 출력을 지원하지 않을 수 있습니다'));
+        },
+        formatToMime(format),
+        resolveQuality(format, quality)
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('이미지를 디코딩할 수 없습니다'));
+    };
+    img.src = url;
+  });
+}
