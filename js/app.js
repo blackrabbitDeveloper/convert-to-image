@@ -24,10 +24,11 @@ function formatBytes(bytes) {
 }
 
 function addFiles(fileList) {
+  downloadArea.textContent = '';
   let skipped = 0;
   for (const file of fileList) {
     if (!file.type.startsWith('image/')) { skipped++; continue; }
-    items.push({ id: nextId++, file, originalSize: file.size, status: 'pending' });
+    items.push({ id: nextId++, file, originalSize: file.size, status: 'pending', thumbUrl: URL.createObjectURL(file) });
   }
   renderList();
   convertBtn.disabled = items.length === 0;
@@ -51,7 +52,7 @@ function renderList() {
     } else {
       detail = `<span class="muted">${formatBytes(it.originalSize)}</span>`;
     }
-    return `<div class="file-item"><span class="name">${it.file.name}</span>${detail}</div>`;
+    return `<div class="file-item"><img class="thumb" src="${it.thumbUrl}" alt=""><span class="name">${it.file.name}</span>${detail}</div>`;
   }).join('');
 }
 
@@ -95,12 +96,27 @@ async function downloadAll() {
   if (done.length === 0) return;
   if (done.length === 1) {
     downloadBlob(done[0].resultBlob, done[0].resultName);
+    resetAll();
     return;
   }
   const zip = new window.JSZip();
   for (const it of done) zip.file(it.resultName, it.resultBlob);
   const blob = await zip.generateAsync({ type: 'blob' });
   downloadBlob(blob, 'converted-images.zip');
+  resetAll();
+}
+
+function resetAll() {
+  for (const it of items) {
+    if (it.thumbUrl) URL.revokeObjectURL(it.thumbUrl);
+  }
+  items = [];
+  nextId = 1;
+  fileListEl.innerHTML = '';
+  downloadArea.innerHTML = '';
+  convertBtn.disabled = true;
+  fileInput.value = '';
+  downloadArea.textContent = '다운로드를 시작했습니다. 목록을 비웠어요.';
 }
 
 function updateDownloadArea() {
