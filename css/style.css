@@ -1,0 +1,93 @@
+:root {
+  --bg: #0f1115;
+  --surface: #1a1d24;
+  --surface-2: #232730;
+  --border: #2e333d;
+  --text: #e6e8ec;
+  --muted: #9aa0aa;
+  --accent: #4f8cff;
+  --ok: #4ade80;
+  --err: #f87171;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, "Segoe UI", "Malgun Gothic", sans-serif;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+header h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
+.subtitle { color: var(--muted); margin: 0 0 1.5rem; font-size: .9rem; }
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.dropzone:hover { border-color: var(--accent); }
+.dropzone.dragover { border-color: var(--accent); background: var(--surface); color: var(--text); }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.control-group { display: flex; align-items: center; gap: .6rem; }
+.control-label { color: var(--muted); font-size: .85rem; }
+.controls label { font-size: .9rem; }
+input[type="range"] { accent-color: var(--accent); }
+input[type="range"]:disabled { opacity: .4; }
+
+button {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: .6rem 1.4rem;
+  font-size: .95rem;
+  cursor: pointer;
+}
+button:disabled { background: var(--surface-2); color: var(--muted); cursor: not-allowed; }
+
+.file-list { display: flex; flex-direction: column; gap: .5rem; }
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .6rem .9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .88rem;
+}
+.file-item .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ok { color: var(--ok); white-space: nowrap; }
+.err { color: var(--err); white-space: nowrap; }
+.muted { color: var(--muted); white-space: nowrap; }
+
+.download-area { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .75rem; align-items: flex-start; }
+.download-area button { margin-left: 0; }
+.summary { margin: 0; color: var(--muted); font-size: .9rem; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: .8rem; text-align: center; }
