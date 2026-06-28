@@ -1,0 +1,11 @@
+{
+  "name": "convert-to-image",
+  "version": "1.0.0",
+  "description": "브라우저 기반 이미지 포맷 변환 웹앱 (PNG/JPEG/WebP)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "dev": "node serve.mjs"
+  },
+  "license": "MIT"
+}
