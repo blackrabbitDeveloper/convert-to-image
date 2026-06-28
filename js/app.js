@@ -52,7 +52,7 @@ function renderList() {
     } else {
       detail = `<span class="muted">${formatBytes(it.originalSize)}</span>`;
     }
-    return `<div class="file-item"><img class="thumb" src="${it.thumbUrl}" alt=""><span class="name">${it.file.name}</span>${detail}</div>`;
+    return `<div class="file-item"><img class="thumb" src="${it.thumbUrl}" alt=""><span class="name">${it.file.name}</span>${detail}<button class="remove" type="button" data-id="${it.id}" aria-label="제거" title="제거">×</button></div>`;
   }).join('');
 }
 
@@ -61,7 +61,7 @@ async function handleConvert() {
   const quality = getQuality();
   convertBtn.disabled = true;
   downloadArea.innerHTML = '';
-  for (const it of items) {
+  for (const it of [...items]) {
     it.status = 'converting';
     renderList();
     try {
@@ -119,6 +119,16 @@ function resetAll() {
   downloadArea.textContent = '다운로드를 시작했습니다. 목록을 비웠어요.';
 }
 
+function removeItem(id) {
+  const idx = items.findIndex((it) => it.id === id);
+  if (idx === -1) return;
+  const [removed] = items.splice(idx, 1);
+  if (removed.thumbUrl) URL.revokeObjectURL(removed.thumbUrl);
+  renderList();
+  convertBtn.disabled = items.length === 0;
+  updateDownloadArea();
+}
+
 function updateDownloadArea() {
   const done = items.filter((it) => it.status === 'done');
   const failed = items.filter((it) => it.status === 'error').length;
@@ -157,5 +167,10 @@ dropzone.addEventListener('drop', (e) => {
 dropzone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => addFiles(fileInput.files));
 convertBtn.addEventListener('click', handleConvert);
+fileListEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.remove');
+  if (!btn) return;
+  removeItem(Number(btn.dataset.id));
+});
 
 syncQualityEnabled();

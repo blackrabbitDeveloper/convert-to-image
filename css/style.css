@@ -90,6 +90,19 @@ button:disabled { background: var(--surface-2); color: var(--muted); cursor: not
   background: var(--surface-2);
 }
 .file-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-item .remove {
+  margin-left: 0;
+  flex: none;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: .2rem .45rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.file-item .remove:hover { color: var(--err); background: var(--surface-2); }
 .ok { color: var(--ok); white-space: nowrap; }
 .err { color: var(--err); white-space: nowrap; }
 .muted { color: var(--muted); white-space: nowrap; }
