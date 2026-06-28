@@ -91,19 +91,55 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+const canPickLocation = () => 'showSaveFilePicker' in window && 'showDirectoryPicker' in window;
+
 async function downloadAll() {
   const done = items.filter((it) => it.status === 'done');
   if (done.length === 0) return;
+  try {
+    if (canPickLocation()) {
+      if (done.length === 1) await saveSingleWithPicker(done[0]);
+      else await saveBatchToDirectory(done);
+    } else {
+      await legacyDownload(done);
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') return; // 위치 선택을 취소 — 목록 유지(재시도 가능)
+    await legacyDownload(done);           // 그 외 오류는 기존 다운로드로 안전하게 폴백
+  }
+  resetAll();
+}
+
+async function saveSingleWithPicker(item) {
+  const ext = '.' + item.resultName.split('.').pop();
+  const handle = await window.showSaveFilePicker({
+    suggestedName: item.resultName,
+    types: [{ description: '이미지', accept: { [item.resultBlob.type || 'application/octet-stream']: [ext] } }],
+  });
+  const writable = await handle.createWritable();
+  await writable.write(item.resultBlob);
+  await writable.close();
+}
+
+async function saveBatchToDirectory(done) {
+  const dir = await window.showDirectoryPicker();
+  for (const it of done) {
+    const handle = await dir.getFileHandle(it.resultName, { create: true });
+    const writable = await handle.createWritable();
+    await writable.write(it.resultBlob);
+    await writable.close();
+  }
+}
+
+async function legacyDownload(done) {
   if (done.length === 1) {
     downloadBlob(done[0].resultBlob, done[0].resultName);
-    resetAll();
     return;
   }
   const zip = new window.JSZip();
   for (const it of done) zip.file(it.resultName, it.resultBlob);
   const blob = await zip.generateAsync({ type: 'blob' });
   downloadBlob(blob, 'converted-images.zip');
-  resetAll();
 }
 
 function resetAll() {
@@ -116,7 +152,7 @@ function resetAll() {
   downloadArea.innerHTML = '';
   convertBtn.disabled = true;
   fileInput.value = '';
-  downloadArea.textContent = '다운로드를 시작했습니다. 목록을 비웠어요.';
+  downloadArea.textContent = '저장을 완료하고 목록을 비웠어요.';
 }
 
 function removeItem(id) {
@@ -139,7 +175,12 @@ function updateDownloadArea() {
   const totalBefore = done.reduce((s, it) => s + it.originalSize, 0);
   const totalAfter = done.reduce((s, it) => s + it.resultSize, 0);
   const pct = (1 - totalAfter / totalBefore) * 100;
-  const label = done.length === 1 ? '다운로드' : `ZIP으로 ${done.length}개 다운로드`;
+  let label;
+  if (done.length === 1) {
+    label = canPickLocation() ? '저장 위치 선택' : '다운로드';
+  } else {
+    label = canPickLocation() ? `폴더 선택해 ${done.length}개 저장` : `ZIP으로 ${done.length}개 다운로드`;
+  }
   downloadArea.innerHTML =
     `<p class="summary">합계 ${formatBytes(totalBefore)} → ${formatBytes(totalAfter)} (-${pct.toFixed(1)}%)` +
     (failed > 0 ? ` · 실패 ${failed}개` : '') + `</p>`;
