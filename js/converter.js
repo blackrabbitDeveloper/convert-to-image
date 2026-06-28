@@ -11,3 +11,18 @@ export function resolveQuality(format, q) {
   const clamped = Math.max(0, Math.min(100, Number(q)));
   return clamped / 100;
 }
+
+const EXT = { png: 'png', jpeg: 'jpg', webp: 'webp' };
+
+export function formatToExt(format) {
+  const ext = EXT[format];
+  if (!ext) throw new Error('지원하지 않는 포맷: ' + format);
+  return ext;
+}
+
+export function renameTo(filename, format) {
+  const ext = formatToExt(format);
+  const dot = filename.lastIndexOf('.');
+  const base = dot === -1 ? filename : filename.slice(0, dot);
+  return base + '.' + ext;
+}
